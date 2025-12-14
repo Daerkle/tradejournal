@@ -6,7 +6,7 @@ name: tradinghub
 services:
   # Next.js Tradinghub App
   app:
-    image: daerkle/tradejournal:latest
+    image: ghcr.io/daerkle/tradejournal:latest
     container_name: tradinghub_app
     ports:
       - "3000:3000"
