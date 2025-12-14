@@ -36,9 +36,7 @@ services:
 
   # Parse Server Backend (TradeNote)
   backend:
-    build:
-      context: ../TradeNote-main
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/daerkle/tradenote-backend:latest
     container_name: tradinghub_backend
     ports:
       - "28080:28080"
