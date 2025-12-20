@@ -832,7 +832,7 @@ export default function TradingPlansPage() {
             <AlertDialogTitle>Trading-Plan löschen?</AlertDialogTitle>
             <AlertDialogDescription>
               Diese Aktion kann nicht rückgängig gemacht werden. Der Trading-Plan
-              "{selectedPlan?.name}" wird permanent gelöscht.
+              &quot;{selectedPlan?.name}&quot; wird permanent gelöscht.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

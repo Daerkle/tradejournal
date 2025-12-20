@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(cd:*)",
+      "Bash(docker login --help:*)",
+      "Bash(docker build:*)",
+      "Bash(.)",
+      "Bash(docker push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push --force origin main)",
+      "Bash(git ls-tree -r origin/main --name-only)",
+      "Bash(gh api:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(cat Dockerfile)",
+      "Bash(gh auth:*)",
+      "Bash(docker login:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(docker buildx build:*)",
+      "Bash(docker buildx create:*)",
+      "Bash(docker buildx use:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"==== {} ====\"\"\"\" && head -50 \"\"\"\"{}\"\"\"\"')",
+      "Bash(claude /plugin marketplace add thedotmack/claude-mem)",
+      "Bash(npm install:*)",
+      "Bash(chmod:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker compose pull:*)",
+      "Bash(docker compose:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "Bash(npm audit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

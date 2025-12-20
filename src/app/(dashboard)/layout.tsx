@@ -17,10 +17,12 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(() => {
+    // Initialize as true on client side to avoid hydration mismatch
+    return typeof window !== 'undefined';
+  });
 
   useEffect(() => {
-    setMounted(true);
     if (!DEV_BYPASS_AUTH) {
       checkAuth();
     }

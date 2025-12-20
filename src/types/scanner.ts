@@ -58,6 +58,27 @@ export interface StockData {
   chartData?: CandleData[];
   // Proxy Plays
   proxyPlays?: string[];
+  // Finviz Extended Data
+  shortFloat?: number;        // Short Float %
+  insiderOwn?: number;        // Insider Ownership %
+  instOwn?: number;           // Institutional Ownership %
+  shortRatio?: number;        // Short Ratio (days to cover)
+  peg?: number;               // PEG Ratio
+  priceToSales?: number;      // P/S Ratio
+  priceToBook?: number;       // P/B Ratio
+  beta?: number;              // Beta
+  atr?: number;               // Average True Range
+  relativeVolume?: number;    // Relative Volume (Finviz)
+  profitMargin?: number;      // Profit Margin %
+  operMargin?: number;        // Operating Margin %
+  grossMargin?: number;       // Gross Margin %
+  returnOnEquity?: number;    // ROE %
+  returnOnAssets?: number;    // ROA %
+  epsGrowthThisYear?: number; // EPS Growth This Year
+  epsGrowthNextYear?: number; // EPS Growth Next Year
+  epsGrowthNext5Y?: number;   // EPS Growth Next 5 Years
+  salesGrowthQoQ?: number;    // Sales Growth Q/Q
+  earningsDate?: string;      // Next Earnings Date
 }
 
 export interface CandleData {

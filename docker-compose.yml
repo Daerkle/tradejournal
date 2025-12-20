@@ -14,15 +14,18 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_PARSE_APP_ID=tradenote123
       - NEXT_PUBLIC_PARSE_JS_KEY=tradenote123
-      - NEXT_PUBLIC_PARSE_SERVER_URL=http://localhost:28080/parse
+      - NEXT_PUBLIC_PARSE_SERVER_URL=http://10.10.20.200:28080/parse
       - FMP_API_KEY=7429b5ed13d44707b05ea011b9461a92
       - REDIS_URL=redis://redis:6379
       - INTERNAL_PARSE_SERVER_URL=http://backend:28080/parse
       - MASTER_KEY=tradenote123
+      - DATABASE_URL=postgresql://tradenote:tradenote_archive@postgres:5432/setup_archive
     depends_on:
       backend:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - tradinghub_net
@@ -46,6 +49,8 @@ services:
       - APP_ID=tradenote123
       - MASTER_KEY=tradenote123
       - TRADENOTE_PORT=28080
+      - PARSE_SERVER_ALLOW_CLIENT_CLASS_CREATION=1
+      - allowClientClassCreation=true
     depends_on:
       mongo:
         condition: service_healthy
@@ -82,6 +87,28 @@ services:
       retries: 5
       start_period: 20s
 
+  # PostgreSQL Datenbank (Setup Archive)
+  postgres:
+    image: postgres:16-alpine
+    container_name: tradinghub_postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - tradinghub_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=tradenote
+      - POSTGRES_PASSWORD=tradenote_archive
+      - POSTGRES_DB=setup_archive
+    networks:
+      - tradinghub_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradenote -d setup_archive"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # Redis Cache
   redis:
     image: redis:7-alpine
@@ -114,4 +141,7 @@ volumes:
     driver: local
   tradinghub_redis_data:
     name: tradinghub_redis_data
+    driver: local
+  tradinghub_postgres_data:
+    name: tradinghub_postgres_data
     driver: local

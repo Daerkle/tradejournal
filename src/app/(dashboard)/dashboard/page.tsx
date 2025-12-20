@@ -7,18 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  TrendingUp,
-  TrendingDown,
   DollarSign,
   BarChart3,
   Target,
   Activity,
-  Clock,
-  Flame,
   Award,
   Percent,
   ArrowDownRight,
-  Zap,
 } from "lucide-react";
 import {
   TradeService,
@@ -29,15 +24,11 @@ import {
   PerformanceBySymbol,
 } from "@/lib/models";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   Cell,
   PieChart,
   Pie,
@@ -62,11 +53,7 @@ function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
 }
 
-function formatHoldTime(minutes: number): string {
-  if (minutes < 60) return `${Math.round(minutes)} Min`;
-  if (minutes < 1440) return `${Math.round(minutes / 60)} Std`;
-  return `${Math.round(minutes / 1440)} Tage`;
-}
+
 
 // Zella Score Radar Chart Data
 function getZellaRadarData(stats: DashboardStats) {
@@ -91,10 +78,10 @@ function getWinRateData(stats: DashboardStats) {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [recentTrades, setRecentTrades] = useState<TradeData[]>([]);
+  const [, setRecentTrades] = useState<TradeData[]>([]);
   const [equityCurve, setEquityCurve] = useState<EquityPoint[]>([]);
-  const [performanceByDay, setPerformanceByDay] = useState<PerformanceByDay[]>([]);
-  const [performanceBySymbol, setPerformanceBySymbol] = useState<PerformanceBySymbol[]>([]);
+  const [, setPerformanceByDay] = useState<PerformanceByDay[]>([]);
+  const [, setPerformanceBySymbol] = useState<PerformanceBySymbol[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

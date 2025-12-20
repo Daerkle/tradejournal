@@ -68,6 +68,35 @@ const METRIC_TOOLTIPS: Record<string, { title: string; description: string; good
     title: "Symbol",
     description: "Ticker-Symbol der Aktie an der Borse",
   },
+  shortFloat: {
+    title: "Short Float %",
+    description: "Prozentsatz der frei handelbaren Aktien, die leerverkauft wurden. Hohe Werte konnen auf Short-Squeeze-Potenzial hindeuten.",
+    good: ">20% = Hohe Short-Quote, Squeeze-Kandidat",
+  },
+  instOwn: {
+    title: "Institutionelle Beteiligung",
+    description: "Prozentsatz der Aktien im Besitz von institutionellen Investoren (Fonds, Banken, etc.).",
+    good: ">50% = Starkes institutionelles Interesse",
+  },
+  insiderOwn: {
+    title: "Insider-Beteiligung",
+    description: "Prozentsatz der Aktien im Besitz von Unternehmensinsidern (Management, Vorstand).",
+    good: ">10% = Management hat Skin in the Game",
+  },
+  shortRatio: {
+    title: "Short Ratio (Days to Cover)",
+    description: "Tage, die es bei normalem Volumen brauchen wurde, alle Short-Positionen einzudecken.",
+    good: ">5 Tage = Potenzial fur Short-Squeeze",
+  },
+  earningsDate: {
+    title: "Earnings Datum",
+    description: "Nachster Termin fur die Veroffentlichung der Quartalszahlen.",
+  },
+  beta: {
+    title: "Beta",
+    description: "Mass fur die Volatilitat im Vergleich zum Gesamtmarkt. Beta >1 = volatiler als der Markt.",
+    good: "1.5-2.5 fur Momentum-Trading",
+  },
   price: {
     title: "Preis",
     description: "Aktueller Aktienkurs in USD",
@@ -236,6 +265,15 @@ function filterByScanType(stocks: StockData[], scanType: string): StockData[] {
       return stocks.filter(s => s.isQullaSetup).sort((a, b) => b.setupScore - a.setupScore);
     case "rs":
       return stocks.filter(s => s.rsRating >= 80).sort((a, b) => b.rsRating - a.rsRating);
+    case "squeeze":
+      // Short Squeeze Kandidaten: Hohe Short-Quote + starkes Momentum + hohes Volumen
+      return stocks.filter(s => {
+        const hasHighShortFloat = (s.shortFloat ?? 0) >= 15;
+        const hasHighVolume = s.volumeRatio >= 1.5;
+        const hasPositiveMomentum = s.momentum1M > 0;
+        const hasInstitutional = (s.instOwn ?? 0) >= 30;
+        return hasHighShortFloat && hasHighVolume && hasPositiveMomentum;
+      }).sort((a, b) => (b.shortFloat ?? 0) - (a.shortFloat ?? 0));
     case "chrisswings":
       // Chris Swings Strategie Kriterien:
       // 1. EMA-Integrität: Preis über EMA21 (Leaders respektieren steigende MAs)
@@ -608,6 +646,77 @@ function ExpandedRowContent({ stock }: ExpandedRowContentProps) {
             </div>
           </Card>
 
+          {/* Ownership & Short Data */}
+          {(stock.shortFloat || stock.instOwn || stock.insiderOwn || stock.earningsDate) && (
+            <Card className="p-4">
+              <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Ownership & Shorts
+              </h4>
+              <div className="space-y-2 text-sm">
+                {stock.shortFloat !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Short Float</span>
+                    <span className={cn(
+                      "font-medium",
+                      stock.shortFloat >= 20 ? "text-red-500" : stock.shortFloat >= 10 ? "text-yellow-500" : ""
+                    )}>
+                      {stock.shortFloat.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+                {stock.shortRatio !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Days to Cover</span>
+                    <span className={cn(
+                      "font-medium",
+                      stock.shortRatio >= 5 ? "text-red-500" : ""
+                    )}>
+                      {stock.shortRatio.toFixed(1)} Tage
+                    </span>
+                  </div>
+                )}
+                {stock.instOwn !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Institutionell</span>
+                    <span className={cn(
+                      "font-medium",
+                      stock.instOwn >= 70 ? "text-green-500" : ""
+                    )}>
+                      {stock.instOwn.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+                {stock.insiderOwn !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Insider</span>
+                    <span className="font-medium">{stock.insiderOwn.toFixed(1)}%</span>
+                  </div>
+                )}
+                {stock.beta !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Beta</span>
+                    <span className={cn(
+                      "font-medium",
+                      stock.beta >= 2 ? "text-orange-500" : stock.beta >= 1.5 ? "text-yellow-500" : ""
+                    )}>
+                      {stock.beta.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {stock.earningsDate && (
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Earnings
+                    </span>
+                    <span className="font-medium text-primary">{stock.earningsDate}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {/* Proxy Plays */}
           {stock.proxyPlays && stock.proxyPlays.length > 0 && (
             <Card className="p-4">
@@ -744,6 +853,11 @@ function StockRow({ stock, isExpanded, onToggle, showEpColumns, compareMode, isS
             {stock.name}
           </div>
         </TableCell>
+        <TableCell>
+          <div className="text-xs truncate max-w-[100px]" title={stock.sector + " - " + stock.industry}>
+            {stock.sector !== "Unknown" ? stock.sector : "-"}
+          </div>
+        </TableCell>
         <TableCell className="font-medium">${formatNumber(stock.price)}</TableCell>
         <TableCell>
           <div className={cn(
@@ -846,6 +960,18 @@ function StockRow({ stock, isExpanded, onToggle, showEpColumns, compareMode, isS
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+        </TableCell>
+        <TableCell>
+          {stock.shortFloat !== undefined ? (
+            <span className={cn(
+              "font-medium",
+              stock.shortFloat >= 20 ? "text-red-500" : stock.shortFloat >= 10 ? "text-yellow-500" : "text-muted-foreground"
+            )}>
+              {stock.shortFloat.toFixed(1)}%
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-1">
@@ -1028,6 +1154,8 @@ export default function ScannerPage() {
         return filterByScanType(streamedStocks, "rs");
       case "chrisswings":
         return filterByScanType(streamedStocks, "chrisswings");
+      case "squeeze":
+        return filterByScanType(streamedStocks, "squeeze");
       default:
         return streamedStocks;
     }
@@ -1073,6 +1201,7 @@ export default function ScannerPage() {
   const setupCount = streamedStocks.length > 0 ? filterByScanType(streamedStocks, "qullamaggie").length : 0;
   const rsCount = streamedStocks.length > 0 ? filterByScanType(streamedStocks, "rs").length : 0;
   const chrisSwingsCount = streamedStocks.length > 0 ? filterByScanType(streamedStocks, "chrisswings").length : 0;
+  const squeezeCount = streamedStocks.length > 0 ? filterByScanType(streamedStocks, "squeeze").length : 0;
 
   // Metric Tooltip Component
   const MetricTooltip = ({ metricKey, children }: { metricKey: string; children: React.ReactNode }) => {
@@ -1153,62 +1282,56 @@ export default function ScannerPage() {
         </div>
       </div>
 
-      {/* Loading Progress - Progressive Streaming Anzeige */}
+      {/* Loading Progress - Compact Design */}
       {loading && (
         <Card>
-          <CardContent className="py-8">
-            <div className="flex flex-col items-center gap-6">
-              {/* Spinner und Hauptstatus */}
-              <div className="flex items-center gap-3">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <div className="text-left">
-                  <p className="font-semibold text-lg">
+          <CardContent className="py-4">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              {/* Left: Spinner & Main Status */}
+              <div className="flex items-center gap-3 min-w-[200px]">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">
                     {scanProgress.phase === "idle" && "Bereit"}
                     {scanProgress.phase === "init" && "Initialisierung"}
-                    {scanProgress.phase === "cache_check" && "Cache wird geprüft"}
+                    {scanProgress.phase === "cache_check" && "Cache Prüfung"}
                     {scanProgress.phase === "fetching" && "Lade Daten"}
                     {scanProgress.phase === "complete" && "Fertig"}
                     {scanProgress.phase === "error" && "Fehler"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{scanProgress.message}</p>
+                  </span>
+                  <span className="text-xs text-muted-foreground line-clamp-1 max-w-[150px]">
+                    {scanProgress.message || "Warte..."}
+                  </span>
                 </div>
               </div>
 
-              {/* Progressive Loading Info */}
-              {streamedStocks.length > 0 && (
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">{streamedStocks.length}</p>
-                  <p className="text-sm text-muted-foreground">Aktien bereits geladen</p>
-                </div>
-              )}
-
-              {/* Progress Bar mit Prozentanzeige */}
-              <div className="w-full max-w-md space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
+              {/* Middle: Progress Bar & Counts */}
+              <div className="flex-1 w-full max-w-xl space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground font-medium">
                     {scanProgress.processed !== undefined && scanProgress.total !== undefined
-                      ? `${scanProgress.processed}/${scanProgress.total} Aktien`
+                      ? `${scanProgress.processed} / ${scanProgress.total}`
                       : scanProgress.cached !== undefined
-                        ? `${scanProgress.cached} aus Cache`
-                        : "Lade..."}
+                        ? `${scanProgress.cached} Cached`
+                        : "Berechne..."}
                   </span>
                   <span className="font-medium">{scanProgress.percent ?? 0}%</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-muted/50 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-blue-500 via-primary to-green-500 h-3 rounded-full transition-all duration-300 ease-out"
+                    className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${scanProgress.percent ?? 0}%` }}
                   />
                 </div>
               </div>
 
-              {/* Phasen-Indikatoren */}
-              <div className="flex items-center gap-2 flex-wrap justify-center">
+              {/* Right: Phase Indicators (Compact) */}
+              <div className="flex items-center gap-1.5">
                 {[
                   { key: "cache_check", label: "Cache" },
-                  { key: "fetching", label: "Laden" },
+                  { key: "fetching", label: "Netzwerk" },
                   { key: "complete", label: "Fertig" },
-                ].map((phase, index) => {
+                ].map((phase) => {
                   const isActive = scanProgress.phase === phase.key;
                   const isCompleted =
                     phase.key === "cache_check" ? ["fetching", "complete"].includes(scanProgress.phase) :
@@ -1216,39 +1339,20 @@ export default function ScannerPage() {
                         false;
 
                   return (
-                    <div key={phase.key} className="flex items-center gap-2">
-                      <div className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                        isActive && "bg-primary text-primary-foreground animate-pulse",
-                        isCompleted && "bg-green-500/20 text-green-600",
-                        !isCompleted && !isActive && "bg-muted text-muted-foreground"
-                      )}>
-                        {isCompleted ? (
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : isActive ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : null}
-                        {phase.label}
-                      </div>
-                      {index < 2 && (
-                        <div className={cn(
-                          "w-4 h-0.5",
-                          isCompleted ? "bg-green-500" : "bg-muted"
-                        )} />
+                    <div
+                      key={phase.key}
+                      className={cn(
+                        "px-2 py-0.5 rounded text-[10px] font-medium border transition-colors",
+                        isActive && "bg-primary/10 text-primary border-primary/20",
+                        isCompleted && "bg-green-500/10 text-green-600 border-green-500/20",
+                        !isActive && !isCompleted && "bg-muted/30 text-muted-foreground border-transparent"
                       )}
+                    >
+                      {phase.label}
                     </div>
                   );
                 })}
               </div>
-
-              {/* Cache Info */}
-              {scanProgress.cached !== undefined && scanProgress.toFetch !== undefined && (
-                <p className="text-xs text-muted-foreground">
-                  {scanProgress.cached} aus Cache • {scanProgress.toFetch} werden neu geladen
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -1350,6 +1454,18 @@ export default function ScannerPage() {
           >
             <Activity className="h-3.5 w-3.5" />
             Swings ({chrisSwingsCount})
+          </Badge>
+
+          <Badge
+            variant={activeTab === "squeeze" ? "default" : "secondary"}
+            className={cn(
+              "cursor-pointer px-3 py-1.5 text-sm font-medium transition-all hover:scale-105 gap-1.5",
+              activeTab === "squeeze" ? "bg-red-500 hover:bg-red-600" : "bg-red-500/20 text-red-600 hover:bg-red-500/30"
+            )}
+            onClick={() => setActiveTab("squeeze")}
+          >
+            <AlertCircle className="h-3.5 w-3.5" />
+            Squeeze ({squeezeCount})
           </Badge>
         </div>
       )}
@@ -1601,6 +1717,7 @@ export default function ScannerPage() {
                             )}
                           </TableHead>
                           <SortHeader field="symbol" metricKey="symbol">Symbol</SortHeader>
+                          <SortHeader field="sector" metricKey="sector">Sektor</SortHeader>
                           <SortHeader field="price" metricKey="price">Preis</SortHeader>
                           <SortHeader field="changePercent" metricKey="changePercent">%</SortHeader>
                           {activeTab === "ep" && <SortHeader field="gapPercent" metricKey="gapPercent">Gap</SortHeader>}
@@ -1611,6 +1728,7 @@ export default function ScannerPage() {
                           <SortHeader field="momentum6M" metricKey="momentum6M">6M%</SortHeader>
                           <SortHeader field="rsRating" metricKey="rsRating">RS</SortHeader>
                           <SortHeader field="setupScore" metricKey="setupScore">Setup</SortHeader>
+                          <SortHeader field="shortFloat" metricKey="shortFloat">Short%</SortHeader>
                           <TableHead className="text-right">Links</TableHead>
                         </TableRow>
                       </TableHeader>

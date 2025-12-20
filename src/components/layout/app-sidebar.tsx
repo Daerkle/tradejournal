@@ -4,28 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  CalendarDays,
-  TrendingUp,
   BarChart3,
   Image,
-  Video,
   BookOpen,
-  StickyNote,
-  Compass,
-
+  Database,
   Settings,
   LogOut,
   Moon,
   Sun,
   ChevronDown,
-  PieChart,
-  Target,
   Radar,
-  ChevronRight,
+  Calendar,
+  FileText,
+  Activity,
+  CalendarDays,
+  ScrollText,
+  NotebookPen,
+  Book,
+  Video,
+  Save,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sidebar,
@@ -38,16 +38,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,11 +48,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/auth-store";
-
-
-
-
-
 
 
 export function AppSidebar() {
@@ -83,190 +70,162 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* General Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Allgemein</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname === "/dashboard"}>
+                  <Link href="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Kalender" isActive={pathname === "/calendar"}>
+                  <Link href="/calendar">
+                    <Calendar className="h-4 w-4" />
+                    <span>Kalender</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Reports" isActive={pathname === "/reports"}>
+                  <Link href="/reports">
+                    <FileText className="h-4 w-4" />
+                    <span>Reports</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Trading Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Trading</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Trades" isActive={pathname === "/trades"}>
+                  <Link href="/trades">
+                    <Activity className="h-4 w-4" />
+                    <span>Trades</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Täglich" isActive={pathname === "/daily"}>
+                  <Link href="/daily">
+                    <CalendarDays className="h-4 w-4" />
+                    <span>Täglich</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Trading-Pläne" isActive={pathname === "/trading-plans"}>
+                  <Link href="/trading-plans">
+                    <ScrollText className="h-4 w-4" />
+                    <span>Trading-Pläne</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Journal Group */}
         <SidebarGroup>
-          <SidebarGroupLabel>Journal</SidebarGroupLabel>
+          <SidebarGroupLabel>Logbuch</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Overview */}
-              <Collapsible defaultOpen className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Übersicht">
-                      <LayoutDashboard className="h-4 w-4" />
-                      <span>Übersicht</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/dashboard"}>
-                          <Link href="/dashboard">
-                            <span>Dashboard</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/calendar"}>
-                          <Link href="/calendar">
-                            <span>Kalender</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/reports"}>
-                          <Link href="/reports">
-                            <span>Reports</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-
-              {/* Trading */}
-              <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Trading">
-                      <BarChart3 className="h-4 w-4" />
-                      <span>Trading</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/trades"}>
-                          <Link href="/trades">
-                            <span>Trades</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/daily"}>
-                          <Link href="/daily">
-                            <span>Täglich</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/trading-plans"}>
-                          <Link href="/trading-plans">
-                            <span>Trading-Pläne</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-
-              {/* Logbook */}
-              <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Logbuch">
-                      <BookOpen className="h-4 w-4" />
-                      <span>Logbuch</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/diary"}>
-                          <Link href="/diary">
-                            <span>Tagebuch</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/notes"}>
-                          <Link href="/notes">
-                            <span>Notizen</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/playbook"}>
-                          <Link href="/playbook">
-                            <span>Playbook</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-
-              {/* Media */}
-              <Collapsible className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Medien">
-                      <Image className="h-4 w-4" />
-                      <span>Medien</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/screenshots"}>
-                          <Link href="/screenshots">
-                            <span>Screenshots</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/videos"}>
-                          <Link href="/videos">
-                            <span>Videos</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Tagebuch" isActive={pathname === "/diary"}>
+                  <Link href="/diary">
+                    <BookOpen className="h-4 w-4" />
+                    <span>Tagebuch</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Notizen" isActive={pathname === "/notes"}>
+                  <Link href="/notes">
+                    <NotebookPen className="h-4 w-4" />
+                    <span>Notizen</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Playbook" isActive={pathname === "/playbook"}>
+                  <Link href="/playbook">
+                    <Book className="h-4 w-4" />
+                    <span>Playbook</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Scanner Group */}
+        {/* Media Group */}
         <SidebarGroup>
-          <SidebarGroupLabel>Scanner</SidebarGroupLabel>
+          <SidebarGroupLabel>Medien</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <Collapsible defaultOpen={true} className="group/collapsible">
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip="Markt">
-                      <Radar className="h-4 w-4" />
-                      <span>Markt</span>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/scanner"}>
-                          <Link href="/scanner">
-                            <span>Scanner</span>
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Screenshots" isActive={pathname === "/screenshots"}>
+                  <Link href="/screenshots">
+                    <Image className="h-4 w-4" />
+                    <span>Screenshots</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Videos" isActive={pathname === "/videos"}>
+                  <Link href="/videos">
+                    <Video className="h-4 w-4" />
+                    <span>Videos</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Tools Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Scanner" isActive={pathname === "/scanner"}>
+                  <Link href="/scanner">
+                    <Radar className="h-4 w-4" />
+                    <span>Scanner</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Browser" isActive={pathname === "/database"}>
+                  <Link href="/database">
+                    <Database className="h-4 w-4" />
+                    <span>Browser</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Backfill" isActive={pathname === "/database/backfill"}>
+                  <Link href="/database/backfill">
+                    <Save className="h-4 w-4" />
+                    <span>Backfill</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
       </SidebarContent>
 
